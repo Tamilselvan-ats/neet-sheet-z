@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { generateMockTest } from '../lib/quiz';
+import { generateMockTest, calculateScore } from '../lib/quiz';
 import { Question } from '../data/questions';
 import { ChevronLeft, ChevronRight, Flag, Timer, CheckCircle2, AlertCircle, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -24,7 +24,7 @@ export const QuizPage: React.FC = () => {
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timer);
-            handleSubmit();
+            handleSubmitRef.current();
             return 0;
           }
           return prev - 1;
@@ -54,19 +54,37 @@ export const QuizPage: React.FC = () => {
   };
 
   const handleSubmit = useCallback(() => {
-    // In a real app, we'd calculate results here
-    // For now, just navigate to dashboard or a results page
-    const score = Object.keys(answers).length * 4; // Mock score calculation
-    addQuizResult({
-      type: 'Full Mock',
-      date: new Date().toISOString(),
-      score: score,
-      total: questions.length * 4,
-      answers,
-      questions
-    });
-    navigate('/results', { state: { questions, answers } });
+    if (!questions.length) return;
+
+    try {
+      const results = calculateScore(questions, answers);
+      
+      addQuizResult({
+        type: 'Full Mock',
+        date: new Date().toISOString(),
+        score: results.score,
+        total: results.totalQuestions * 4,
+        // We don't store full questions/answers in history to save localStorage space
+        // but we pass them to the results page via state
+      });
+
+      navigate('/results', { 
+        state: { 
+          questions, 
+          answers 
+        },
+        replace: true // Prevent going back to the quiz
+      });
+    } catch (error) {
+      console.error('Submission failed:', error);
+      alert('Failed to submit the test. Please try again.');
+    }
   }, [answers, questions, addQuizResult, navigate]);
+
+  const handleSubmitRef = React.useRef(handleSubmit);
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);

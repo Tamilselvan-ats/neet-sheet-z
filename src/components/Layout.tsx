@@ -15,20 +15,36 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:relative lg:translate-x-0",
         !isSidebarOpen && "-translate-x-full lg:hidden"
       )}>
         <div className="h-full flex flex-col">
-          <div className="p-6 flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
-              <GraduationCap size={24} />
+          <div className="p-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
+                <GraduationCap size={24} />
+              </div>
+              <div>
+                <h1 className="font-bold text-slate-900 leading-tight">NEET 2026</h1>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Master Tracker</p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-bold text-slate-900 leading-tight">NEET 2026</h1>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Master Tracker</p>
-            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-2 hover:bg-slate-100 rounded-lg lg:hidden text-slate-500"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           <nav className="flex-1 px-4 space-y-1">
@@ -36,6 +52,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => setIsSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
                   location.pathname === item.path
