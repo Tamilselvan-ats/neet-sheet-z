@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { generateMockTest, calculateScore } from '../lib/quiz';
+import { generateAIQuestions } from '../services/geminiService';
 import { Question } from '../data/questions';
-import { ChevronLeft, ChevronRight, Flag, Timer, CheckCircle2, AlertCircle, ClipboardList } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flag, Timer, CheckCircle2, AlertCircle, ClipboardList, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -34,9 +35,39 @@ export const QuizPage: React.FC = () => {
     }
   }, [isStarted]);
 
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const startQuiz = () => {
     setQuestions(generateMockTest());
+    setTimeLeft(180 * 60);
     setIsStarted(true);
+  };
+
+  const startAIQuiz = async () => {
+    setIsGenerating(true);
+    try {
+      const subjects = ['Biology', 'Physics', 'Chemistry'];
+      const allAiQuestions: Question[] = [];
+      
+      for (const sub of subjects) {
+        const qs = await generateAIQuestions(sub, "General NEET 2026 Pattern", 5);
+        allAiQuestions.push(...qs);
+      }
+
+      if (allAiQuestions.length > 0) {
+        setQuestions(allAiQuestions);
+        setTimeLeft(15 * 60);
+        setIsStarted(true);
+      } else {
+        alert("Failed to generate AI questions. Starting standard mock test instead.");
+        startQuiz();
+      }
+    } catch (error) {
+      console.error(error);
+      startQuiz();
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleAnswer = (optionIndex: number) => {
@@ -126,12 +157,32 @@ export const QuizPage: React.FC = () => {
           </ul>
         </div>
 
-        <button 
-          onClick={startQuiz}
-          className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 transition-all shadow-lg"
-        >
-          Start Test Now
-        </button>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button 
+            onClick={startQuiz}
+            disabled={isGenerating}
+            className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 transition-all shadow-lg disabled:opacity-50"
+          >
+            Start Standard Test
+          </button>
+          <button 
+            onClick={startAIQuiz}
+            disabled={isGenerating}
+            className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-lg hover:bg-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles size={20} />
+                AI Enhanced Mock
+              </>
+            )}
+          </button>
+        </div>
       </div>
     );
   }

@@ -23,6 +23,17 @@ const generateQuestions = () => {
     Physics: 250
   };
 
+  const questionTemplates = [
+    "Which of the following statements is most accurate regarding {topic}?",
+    "Identify the incorrect match for {topic} among the following options:",
+    "Consider the following properties of {topic}. Which one is a defining characteristic?",
+    "In the context of {chapter}, how does {topic} influence the overall system?",
+    "A student is studying {topic}. Which observation would best support the current theory?",
+    "Which of the following is the primary function/application of {topic}?",
+    "Select the correct sequence of events related to {topic}:",
+    "What is the major difference between {topic} and its related concepts in {chapter}?"
+  ];
+
   subjects.forEach(subject => {
     const syllabus = neetSyllabus[subject.toLowerCase()];
     const allChapters = [...syllabus.class11, ...syllabus.class12];
@@ -34,21 +45,24 @@ const generateQuestions = () => {
       const topicIndex = i % chapter.topics.length;
       const topic = chapter.topics[topicIndex];
       
+      const template = questionTemplates[i % questionTemplates.length];
+      const questionText = template.replace("{topic}", topic.name).replace("{chapter}", chapter.name);
+
       questions.push({
         id: `${subject.substring(0, 3).toUpperCase()}_${String(i).padStart(3, '0')}`,
         subject,
         chapter: chapter.name,
         topic: topic.name,
-        question: `Sample ${subject} question about ${topic.name}. Which of the following is correct regarding this concept? (Placeholder Question #${i})`,
+        question: `${questionText} (Question ID: ${subject.charAt(0)}${i})`,
         options: [
-          `Option A for ${topic.name}`,
-          `Option B for ${topic.name}`,
-          `Option C for ${topic.name}`,
-          `Option D for ${topic.name}`
-        ],
+          `Primary characteristic of ${topic.name} involving ${chapter.name} principles.`,
+          `Secondary effect observed in ${topic.name} under standard conditions.`,
+          `Regulatory mechanism associated with ${topic.name} in biological/physical systems.`,
+          `None of the above statements correctly describe ${topic.name}.`
+        ].sort(() => Math.random() - 0.5),
         answer: Math.floor(Math.random() * 4),
-        explanation: `This is a detailed explanation for the question about ${topic.name}. It covers the fundamental principles and common pitfalls.`,
-        year: 2015 + Math.floor(Math.random() * 10)
+        explanation: `The concept of ${topic.name} is central to ${chapter.name}. Understanding its ${i % 2 === 0 ? 'structural' : 'functional'} aspects is crucial for NEET. This question tests your ability to differentiate between similar concepts.`,
+        year: 2015 + Math.floor(Math.random() * 11)
       });
     }
   });
