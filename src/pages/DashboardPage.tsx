@@ -134,7 +134,7 @@ export const DashboardPage: React.FC = () => {
         <div className="bg-emerald-600 rounded-2xl p-8 text-white flex flex-col justify-between">
           <div>
             <h3 className="text-2xl font-bold mb-2">Ready for a Mock Test?</h3>
-            <p className="opacity-90 mb-6">Challenge yourself with a full 180-question mock test or try our new AI-generated mock based on the latest 2026 patterns.</p>
+            <p className="opacity-90 mb-6">Challenge yourself with a full 180-question mock test designed to simulate the real NEET environment.</p>
           </div>
           <Link 
             to="/quiz" 
