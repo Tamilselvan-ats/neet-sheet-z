@@ -47,23 +47,18 @@ export const QuizPage: React.FC = () => {
     setIsGenerating(true);
     try {
       const subjects = ['Biology', 'Physics', 'Chemistry'];
-      const allAiQuestions: Question[] = [];
-      
-      for (const sub of subjects) {
-        const qs = await generateAIQuestions(sub, "General NEET 2026 Pattern", 5);
-        allAiQuestions.push(...qs);
-      }
+      const allAiQuestions = await generateAIQuestions(subjects, 5);
 
-      if (allAiQuestions.length > 0) {
+      if (allAiQuestions && allAiQuestions.length > 0) {
         setQuestions(allAiQuestions);
         setTimeLeft(15 * 60);
         setIsStarted(true);
       } else {
-        alert("Failed to generate AI questions. Starting standard mock test instead.");
+        alert("AI generation is currently unavailable. This might be due to high traffic or API configuration. Starting standard mock test instead.");
         startQuiz();
       }
     } catch (error) {
-      console.error(error);
+      console.error("Quiz start error:", error);
       startQuiz();
     } finally {
       setIsGenerating(false);

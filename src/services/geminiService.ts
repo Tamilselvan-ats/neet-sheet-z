@@ -3,10 +3,16 @@ import { Question } from "../data/questions";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export async function generateAIQuestions(subject: string, chapter: string, count: number = 5): Promise<Question[]> {
-  const prompt = `Generate ${count} high-quality NEET UG 2026 level multiple choice questions for ${subject}, Chapter: ${chapter}. 
-  Include realistic options, the correct answer index (0-3), and a brief explanation. 
-  Ensure the questions follow the latest NCERT pattern.`;
+export async function generateAIQuestions(subjects: string[], countPerSubject: number = 5): Promise<Question[]> {
+  const prompt = `Generate a total of ${subjects.length * countPerSubject} high-quality NEET UG 2026 level multiple choice questions.
+  Provide ${countPerSubject} questions for each of these subjects: ${subjects.join(', ')}.
+  
+  For each question:
+  1. Use current NCERT 2024-25 syllabus trends for NEET 2026.
+  2. Include 4 realistic options where only one is correct.
+  3. Provide a clear explanation of why the answer is correct and why others are wrong.
+  4. Ensure questions vary in difficulty (Easy, Medium, Hard).
+  5. Use the search tool to find recent high-yield topics or experimental-based questions common in recent NEET papers.`;
 
   try {
     const response = await ai.models.generateContent({
@@ -19,6 +25,8 @@ export async function generateAIQuestions(subject: string, chapter: string, coun
           items: {
             type: Type.OBJECT,
             properties: {
+              subject: { type: Type.STRING, enum: subjects },
+              chapter: { type: Type.STRING },
               question: { type: Type.STRING },
               options: { 
                 type: Type.ARRAY, 
@@ -30,7 +38,7 @@ export async function generateAIQuestions(subject: string, chapter: string, coun
               explanation: { type: Type.STRING },
               topic: { type: Type.STRING }
             },
-            required: ["question", "options", "answer", "explanation", "topic"]
+            required: ["subject", "chapter", "question", "options", "answer", "explanation", "topic"]
           }
         },
         tools: [{ googleSearch: {} }]
@@ -39,9 +47,7 @@ export async function generateAIQuestions(subject: string, chapter: string, coun
 
     const data = JSON.parse(response.text || "[]");
     return data.map((q: any, i: number) => ({
-      id: `AI_${subject.charAt(0)}_${Date.now()}_${i}`,
-      subject: subject as any,
-      chapter,
+      id: `AI_${q.subject.charAt(0)}_${Date.now()}_${i}`,
       ...q,
       year: 2026
     }));
