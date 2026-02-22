@@ -54,7 +54,8 @@ export const QuizPage: React.FC = () => {
         setTimeLeft(15 * 60);
         setIsStarted(true);
       } else {
-        alert("AI generation is currently unavailable. This might be due to high traffic or API configuration. Starting standard mock test instead.");
+        // This case is now handled by the fallback in the service, 
+        // but as a safety measure we still have startQuiz()
         startQuiz();
       }
     } catch (error) {
